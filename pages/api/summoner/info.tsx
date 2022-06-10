@@ -34,7 +34,7 @@ export default async function info(req:any, res:any) {
 
     console.log(info_summoner);
 
-    let leagueEntryDTO = await fetch(`https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/${info_summoner.accountId}?api_key=${riotAPI.token}`, {
+    let leagueEntryDTO = await fetch(`https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/${info_summoner.id}?api_key=${riotAPI.token}`, {
         method: 'GET',
     });
 
@@ -125,6 +125,7 @@ console.log(info_summoner.puuid)
         matches: tableaux_matches
     };
 
+    console.log(info_summoner)
     console.log(info_ranked)
     console.log(resp)
     console.log(resp.matches[0].match_participants[0].Player)
