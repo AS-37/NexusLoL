@@ -1,4 +1,4 @@
-import { RiotAPI, RiotAPITypes } from '@fightmegg/riot-api';
+
 import { PlatformId } from '@fightmegg/riot-rate-limiter';
 import riotAPI from '../../../lib/riot-api'
 
@@ -10,8 +10,8 @@ const leagueEntry = {
     leaguePoints: 0
 };
 
-let region2:any = PlatformId.EUROPE;
-RiotAPITypes
+let region2:any= "europe";
+
 export default async function info(req:any, res:any) {
     if (req.body.username == null) {
         return res.status(400).json({
@@ -26,20 +26,25 @@ export default async function info(req:any, res:any) {
         });
     }
 
-    let summonerDTO = await riotAPI.summoner.getBySummonerName({
-        region: PlatformId.EUW1,
-        summonerName: `${req.body.username}`,
+    let summonerDTO = await fetch(`https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/${req.body.username}?api_key=${riotAPI.token}`, {
+        method: 'GET',
     });
 
-    let leagueEntryDTO = await riotAPI.league.getEntriesBySummonerId({
-        region: PlatformId.EUW1,
-        summonerId: summonerDTO.id
+    let info_summoner = await summonerDTO.json();
+
+    console.log(info_summoner);
+
+    let leagueEntryDTO = await fetch(`https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/${info_summoner.accoundId}?api_key=${riotAPI.token}`, {
+        method: 'GET',
     });
-    let region:any = PlatformId.EUROPE;
+
+    let region:any = "europe";
+
+    let info_ranked = await leagueEntryDTO.json()
     
-console.log(summonerDTO.puuid)
+console.log(info_summoner.puuid)
 
-    let matchList:any = await fetch(`https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/${summonerDTO.puuid}/ids?api_key=${riotAPI.token}`, {
+    let matchList:any = await fetch(`https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/${info_summoner.puuid}/ids?api_key=${riotAPI.token}`, {
         method: 'GET',
     });
 
@@ -69,7 +74,7 @@ console.log(summonerDTO.puuid)
     console.log(data_match)
 
     const index = data_match.info.participants.findIndex((element: { puuid: string; }) => {
-        return element.puuid == summonerDTO.puuid;
+        return element.puuid == info_summoner.puuid;
     });
 
     //let pos_joueur = data_match.info.participants.findIndex(check(data_match.info.participants))
@@ -111,12 +116,12 @@ console.log(summonerDTO.puuid)
     }
 
     let resp = {
-        summonerLevel: summonerDTO.summonerLevel,
-        name: summonerDTO.name,
-        icon: summonerDTO.profileIconId,
-        puuid: summonerDTO.puuid,
-        solo: leagueEntryDTO[0],
-        flex: leagueEntryDTO[1],
+        summonerLevel: info_summoner.summonerLevel,
+        name: info_summoner.name,
+        icon: info_summoner.profileIconId,
+        puuid: info_summoner.puuid,
+        solo: info_ranked[0],
+        flex: info_ranked[1],
         matches: tableaux_matches
     };
 
